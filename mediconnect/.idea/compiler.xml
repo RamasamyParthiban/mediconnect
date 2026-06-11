@@ -7,12 +7,16 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="service-registry (1)" />
+        <module name="config-server" />
+        <module name="config-server (1)" />
         <module name="service-registry" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="config-server" options="-parameters" />
+      <module name="config-server (1)" options="-parameters" />
       <module name="service-registry" options="-parameters" />
       <module name="service-registry (1)" options="-parameters" />
     </option>
