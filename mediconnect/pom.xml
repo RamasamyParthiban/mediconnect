@@ -19,7 +19,7 @@
         <module>config-server</module>
         <module>api-gateway</module>
         <module>user-service</module>
-<!--        <module>doctor-service</module>-->
+        <module>doctor-service</module>
 <!--        <module>appointment-service</module>-->
 <!--        <module>prescription-service</module>-->
 <!--        <module>payment-service</module>-->

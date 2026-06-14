@@ -42,32 +42,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse findByEmail(String email) {
 
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        return user != null ? UserResponse.builder()
+        return UserResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
                 .phone(user.getPhone())
-                .role(user.getRole()).build() : null;
+                .role(user.getRole()).build();
     }
 
     @Override
     public LoginResponse loginUser(String email, String password) {
 
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));
 
-        if (user != null) {
-            String userPassword = user.getPassword();
+        String userPassword = user.getPassword();
 
-            if (encoder.matches(password, userPassword)) {
-                return LoginResponse.builder().name(user.getName()).role(user.getRole()).token(jwtUtils.generateToken(email, user.getRole())).build();
-            } else {
-                throw new RuntimeException("Invalid credentials");
-            }
-
+        if (encoder.matches(password, userPassword)) {
+            return LoginResponse.builder().name(user.getName()).role(user.getRole()).token(jwtUtils.generateToken(email, user.getRole(), user.getId())).build();
         } else {
-            throw new RuntimeException("User not found");
+            throw new RuntimeException("Invalid credentials");
         }
     }
 

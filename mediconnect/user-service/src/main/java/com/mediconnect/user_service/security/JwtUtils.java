@@ -1,6 +1,7 @@
 package com.mediconnect.user_service.security;
 
 import com.mediconnect.user_service.model.Role;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -16,21 +17,22 @@ import java.util.Map;
 public class JwtUtils {
 
     @Value("${jwt.secret}")
-    private String secret;
+    private String secret; // read from config server
 
     @Value("${jwt.expiration}")
-    private Long expiration;
+    private Long expiration; // read from config server (86400000 = 24hrs)
 
-    public Key getSigningKey() {
+    public Key getSigningKey() {    // Converts secret string to cryptographic Key
 
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String email, Role role) {
+    public String generateToken(String email, Role role, Long userID) { // Creates JWT token after successful login
 
         Map<String, Object> claim = new HashMap<>();
 
         claim.put("role", role);
+        claim.put("userID", userID);
 
         return Jwts.builder()
                 .setClaims(claim)
@@ -42,9 +44,10 @@ public class JwtUtils {
 
     }
 
+    // Reads email from token
     public String extractEmail(String token) {
 
-      return Jwts.parserBuilder()
+        return Jwts.parserBuilder()
                 .setSigningKey(getSigningKey())
                 .build()
                 .parseClaimsJws(token)
@@ -52,6 +55,7 @@ public class JwtUtils {
                 .getSubject();
     }
 
+    // Checks if token is valid and not expired
     public boolean validateToken(String token) {
 
         try {
@@ -60,7 +64,33 @@ public class JwtUtils {
         } catch (Exception e) {
             e.printStackTrace();
             return false;
+            // ExpiredJwtException    → token expired
+            // MalformedJwtException  → token corrupted
+            // SignatureException     → token tampered
         }
+    }
 
+    public Long extractUserID(String token) {
+
+        Claims claims = Jwts
+                .parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userID", Long.class);
+    }
+
+    public String extractRole(String token){
+
+        Claims claims = Jwts
+                .parserBuilder()
+                .setSigningKey(getSigningKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+       return  claims.get("role", String.class);
     }
 }

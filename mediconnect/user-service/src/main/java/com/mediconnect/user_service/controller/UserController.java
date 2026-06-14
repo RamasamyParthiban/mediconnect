@@ -34,18 +34,17 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
     }
-    
+
     @GetMapping({"/{email}"})
-    public ResponseEntity<UserResponse> findUser(@PathVariable String email){
+    public ResponseEntity<?> findUser(@PathVariable String email) {
 
-        UserResponse userResponse = userService.findByEmail(email);
-
-        if(userResponse != null){
+        try {
+            UserResponse userResponse = userService.findByEmail(email);
             return ResponseEntity.ok(userResponse);
-        }else{
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
 
     }
-    
+
 }

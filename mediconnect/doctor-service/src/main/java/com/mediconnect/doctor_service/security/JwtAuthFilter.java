@@ -1,4 +1,4 @@
-package com.mediconnect.user_service.security;
+package com.mediconnect.doctor_service.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,7 +7,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -18,29 +17,24 @@ import java.util.ArrayList;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
-    private JwtUtils jwtUtils;
+    JwtUtils jwtUtils;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        // 1. Read Authorization header
-        String authHeader = request.getHeader("Authorization");
-
         String token = null;
-
         String email = null;
 
-        // 2. Check if header starts with "Bearer "
-        if (authHeader != null && authHeader.startsWith("Bearer")) {
-            token = authHeader.substring(7);
+        String authHead = request.getHeader("Authorization");
+
+        if (authHead != null && authHead.startsWith("Bearer ")) {
+            token = authHead.substring(7);
             email = jwtUtils.extractEmail(token);
         }
 
-        // 3. If email extracted and no existing authentication
-        if( email != null && SecurityContextHolder.getContext().getAuthentication() == null){
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // 4. Validate token
-            if(jwtUtils.validateToken(token)) {
+            if (jwtUtils.validateToken(token)) {
 
                 Long userID = jwtUtils.extractUserID(token);
 
@@ -48,10 +42,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 String principal = email+":"+userID+":"+role;
 
-                // 5. Create authentication object and set in SecurityContext
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(principal, null, new ArrayList<>());
-
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                 SecurityContextHolder.getContext().setAuthentication(authToken);
 
@@ -59,7 +50,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         }
 
-        // 6. Continue with next filter
         filterChain.doFilter(request, response);
 
     }
