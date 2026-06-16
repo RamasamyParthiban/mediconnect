@@ -20,7 +20,7 @@
         <module>api-gateway</module>
         <module>user-service</module>
         <module>doctor-service</module>
-<!--        <module>appointment-service</module>-->
+        <module>appointment-service</module>
 <!--        <module>prescription-service</module>-->
 <!--        <module>payment-service</module>-->
 <!--        <module>notification-service</module>-->

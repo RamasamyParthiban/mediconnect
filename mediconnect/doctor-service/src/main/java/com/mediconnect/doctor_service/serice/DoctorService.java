@@ -28,6 +28,9 @@ public interface DoctorService {
 
     List<DoctorResponse> getAllDoctors();
 
+    SlotResponse updateSlotStatus(Long slotId, boolean isBooked);
+
+    SlotResponse getSlotById(Long slotID);
 }
 
 

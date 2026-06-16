@@ -116,6 +116,25 @@ public class DoctorServiceImpl implements DoctorService {
         return doctorRepository.findAll().stream().map(this::mapToRespond).collect(Collectors.toList());
     }
 
+    @Override
+    @Transactional
+    public SlotResponse updateSlotStatus(Long slotId, boolean isBooked) {
+
+        AvailabilitySlot slotResponse = slotRepository.findById(slotId).orElseThrow(() -> new RuntimeException("Slot Not Found"));
+
+        slotResponse.setBooked(isBooked);
+
+        return mapSlotToRespond(slotResponse);
+    }
+
+    @Override
+    public SlotResponse getSlotById(Long slotID) {
+
+        AvailabilitySlot slotResponse = slotRepository.findById(slotID).orElseThrow(() -> new RuntimeException("Slot Not Found"));
+
+        return mapSlotToRespond(slotResponse);
+    }
+
     public String getCurrentEmail() {
 
         return SecurityContextHolder.getContext().getAuthentication().getName().split(":")[0];

@@ -1,4 +1,4 @@
-package com.mediconnect.doctor_service.security;
+package com.mediconnect.appointment_service.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -14,7 +14,7 @@ public class JwtUtils {
     @Value("${jwt.secret}")
     private String secret;
 
-    public Key getSigningKey() {
+    public Key getSiginingKey() {
 
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
@@ -23,40 +23,14 @@ public class JwtUtils {
 
         return Jwts
                 .parserBuilder()
-                .setSigningKey(getSigningKey())
+                .setSigningKey(getSiginingKey())
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
     }
 
-    public Long extractUserID(String token) {
-
-        Claims claims = Jwts
-                .parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.get("userId", Long.class);
-
-    }
-
-    public String extractRole(String token){
-
-        Claims claims = Jwts
-                .parserBuilder()
-                .setSigningKey(getSigningKey())
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-
-        return claims.get("role" , String.class);
-    }
-
     public boolean validateToken(String token) {
-
         try {
             extractEmail(token);
             return true;
@@ -64,4 +38,30 @@ public class JwtUtils {
             return false;
         }
     }
+
+    public Long extractUserId(String token) {
+
+        Claims claims = Jwts
+                .parserBuilder()
+                .setSigningKey(getSiginingKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("userId", Long.class);
+    }
+
+    public String extractRole(String token) {
+
+        Claims claims = Jwts
+                .parserBuilder()
+                .setSigningKey(getSiginingKey())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("role", String.class);
+    }
+
+
 }

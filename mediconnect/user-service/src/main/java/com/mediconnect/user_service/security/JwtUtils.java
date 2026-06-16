@@ -32,7 +32,7 @@ public class JwtUtils {
         Map<String, Object> claim = new HashMap<>();
 
         claim.put("role", role);
-        claim.put("userID", userID);
+        claim.put("userId", userID);
 
         return Jwts.builder()
                 .setClaims(claim)
@@ -79,7 +79,7 @@ public class JwtUtils {
                 .parseClaimsJws(token)
                 .getBody();
 
-        return claims.get("userID", Long.class);
+        return claims.get("userId", Long.class);
     }
 
     public String extractRole(String token){
