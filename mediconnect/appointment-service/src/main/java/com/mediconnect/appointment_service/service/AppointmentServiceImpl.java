@@ -1,12 +1,12 @@
 package com.mediconnect.appointment_service.service;
 
 import com.mediconnect.appointment_service.client.DoctorClient;
-import com.mediconnect.appointment_service.dto.AppointmentRequest;
-import com.mediconnect.appointment_service.dto.AppointmentResponse;
-import com.mediconnect.appointment_service.dto.DoctorResponse;
-import com.mediconnect.appointment_service.dto.SlotResponse;
+import com.mediconnect.appointment_service.client.UserClient;
+import com.mediconnect.appointment_service.dto.*;
+import com.mediconnect.appointment_service.event.AppointmentEvent;
 import com.mediconnect.appointment_service.model.Appointment;
 import com.mediconnect.appointment_service.model.AppointmentStatus;
+import com.mediconnect.appointment_service.publisher.MessagePublisher;
 import com.mediconnect.appointment_service.repository.AppointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -25,6 +25,12 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
     private DoctorClient doctorClient;
+
+    @Autowired
+    private UserClient userClient;
+
+    @Autowired
+    private MessagePublisher messagePublisher;
 
     @Override
     public AppointmentResponse bookAppointment(AppointmentRequest appointmentRequest) {
@@ -47,6 +53,32 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         doctorClient.updateSlotStatus(appointment.getSlotId(), true);
 
+        //Publish Event to RabbitMQ
+
+        try{
+
+            UserResponse patient = userClient.getUserByEmail(getCurrentEmail());
+
+            DoctorResponse doctor = doctorClient.getDoctorById(appointmentRequest.getDoctorId());
+
+            AppointmentEvent appointmentEvent = AppointmentEvent
+                    .builder()
+                    .appointmentId(appointment.getId())
+                    .patientId(appointment.getPatientId())
+                    .doctorId(appointment.getDoctorId())
+                    .patientEmail(patient.getEmail())
+                    .doctorName(doctor.getName())
+                    .appointmentTime(slot.getDateTime())
+                    .status("BOOKED")
+                    .build();
+
+            messagePublisher.publishAppointmentEvent(appointmentEvent, "appointment.booked");
+
+        } catch (Exception e) {
+            //Don't fail appointment if notification fails
+            System.out.println("Notification failed: " + e.getMessage());
+        }
+
         return mapToRespond(appointment);
     }
 
@@ -63,6 +95,32 @@ public class AppointmentServiceImpl implements AppointmentService {
         appointment.setAppointmentStatus(AppointmentStatus.CANCELLED);
 
         doctorClient.updateSlotStatus(appointment.getSlotId(), false);
+
+        //Publish Event to RabbitMQ
+
+        try{
+
+            UserResponse patient = userClient.getUserByEmail(getCurrentEmail());
+
+            DoctorResponse doctor = doctorClient.getDoctorById(appointment.getDoctorId());
+
+            AppointmentEvent appointmentEvent = AppointmentEvent.builder()
+                    .appointmentId(appointment.getId())
+                    .patientId(appointment.getPatientId())
+                    .doctorId(appointment.getDoctorId())
+                    .patientEmail(patient.getEmail())
+                    .doctorName(doctor.getName())
+                    .appointmentTime(null)
+                    .status("CANCELLED")
+                    .build();
+
+            messagePublisher.publishAppointmentEvent(appointmentEvent, "appointment.cancelled");
+
+        } catch (Exception e) {
+            //Don't fail appointment if notification fails
+            System.out.println("Notification failed: " + e.getMessage());
+        }
+
 
         return mapToRespond(appointment);
     }
@@ -89,6 +147,10 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     private Long getCurrentUserId() {
         return Long.parseLong(SecurityContextHolder.getContext().getAuthentication().getName().split(":")[1]);
+    }
+
+    private String getCurrentEmail() {
+        return SecurityContextHolder.getContext().getAuthentication().getName().split(":")[0];
     }
 
     private AppointmentResponse mapToRespond(Appointment appointment) {

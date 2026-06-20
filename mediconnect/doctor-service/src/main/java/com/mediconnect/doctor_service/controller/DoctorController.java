@@ -37,8 +37,8 @@ public class DoctorController {
         }
     }
 
-    @GetMapping("/userID/{userID}")
-    public ResponseEntity<?> getDoctorByUserID(@PathVariable Long userID) {
+    @GetMapping("/userId/{userID}")
+    public ResponseEntity<?> getDoctorByUserId(@PathVariable Long userID) {
 
         try {
             DoctorResponse doctor = doctorService.getDoctorByUserId(userID);

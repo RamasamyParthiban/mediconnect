@@ -89,7 +89,7 @@ public class DoctorServiceImpl implements DoctorService {
 
         AvailabilitySlot availabilitySlot = slotRepository.save(AvailabilitySlot.builder().datetime(slotRequest.getDatetime()).isBooked(false).doctor(doctor).build());
 
-        return SlotResponse.builder().id(availabilitySlot.getId()).booked(availabilitySlot.isBooked()).datetime(availabilitySlot.getDatetime()).build();
+        return SlotResponse.builder().id(availabilitySlot.getId()).booked(availabilitySlot.isBooked()).dateTime(availabilitySlot.getDatetime()).build();
     }
 
     @Override

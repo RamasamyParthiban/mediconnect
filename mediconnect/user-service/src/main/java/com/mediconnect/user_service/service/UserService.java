@@ -13,4 +13,5 @@ public interface UserService {
 
    LoginResponse loginUser(String email, String password);
 
+    UserResponse findUserById(Long id);
 }

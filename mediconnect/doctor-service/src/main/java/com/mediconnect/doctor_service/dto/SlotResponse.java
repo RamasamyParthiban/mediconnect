@@ -18,5 +18,5 @@ public class SlotResponse {
 
     private boolean booked;
 
-    private LocalDateTime datetime;
+    private LocalDateTime dateTime;
 }

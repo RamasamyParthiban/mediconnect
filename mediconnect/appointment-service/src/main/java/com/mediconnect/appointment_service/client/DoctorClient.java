@@ -21,4 +21,7 @@ public interface DoctorClient {
     @GetMapping("/api/doctors/userID/{userID}")
     DoctorResponse getDoctorByUserId(@PathVariable Long userID);
 
+    @GetMapping("/api/doctors/id/{id}")
+    DoctorResponse getDoctorById(@PathVariable Long id);
+
 }

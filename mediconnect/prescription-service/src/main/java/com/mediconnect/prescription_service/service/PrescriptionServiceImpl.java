@@ -1,9 +1,13 @@
 package com.mediconnect.prescription_service.service;
 
 import com.mediconnect.prescription_service.client.AppointmentClient;
+import com.mediconnect.prescription_service.client.DoctorClient;
+import com.mediconnect.prescription_service.client.UserClient;
 import com.mediconnect.prescription_service.dto.*;
+import com.mediconnect.prescription_service.event.PrescriptionEvent;
 import com.mediconnect.prescription_service.model.Medicine;
 import com.mediconnect.prescription_service.model.Prescription;
+import com.mediconnect.prescription_service.publisher.MessagePublisher;
 import com.mediconnect.prescription_service.repository.PrescriptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,8 +27,27 @@ public class PrescriptionServiceImpl implements PrescriptionService {
     @Autowired
     AppointmentClient appointmentClient;
 
+    @Autowired
+    MessagePublisher messagePublisher;
+
+    @Autowired
+    DoctorClient doctorClient;
+
+    @Autowired
+    UserClient userClient;
+
     @Override
     public PrescriptionResponse savePrescription(PrescriptionRequest prescriptionRequest) {
+
+        System.out.println("Current UserID "+getCurrentUserId());
+
+        System.out.println();
+
+        DoctorResponse doctorResponse = doctorClient.getDoctorByUserId(getCurrentUserId());
+
+        if (doctorResponse == null) {
+            throw new RuntimeException("Doctor Not Found");
+        }
 
         AppointmentResponse appointment = appointmentClient.getAppointmentById(prescriptionRequest.getAppointmentId());
 
@@ -40,7 +63,7 @@ public class PrescriptionServiceImpl implements PrescriptionService {
                 .builder()
                 .appointmentId(appointment.getId())
                 .patientId(appointment.getPatientId())
-                .doctorId(getCurrentUserId())
+                .doctorId(doctorResponse.getId())
                 .instructions(prescriptionRequest.getInstructions())
                 .prescribedAt(LocalDateTime.now())
                 .build();
@@ -53,7 +76,30 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
         prescription.setMedicines(medicines);
 
-        return mapToRespond(prescriptionRepository.save(prescription));
+        Prescription savedPrescription = prescriptionRepository.save(prescription);
+
+        try{
+
+            DoctorResponse doctor = doctorClient.getDoctorById(savedPrescription.getDoctorId());
+
+            UserResponse patient = userClient.getUserById(savedPrescription.getPatientId());
+
+            PrescriptionEvent prescriptionEvent = PrescriptionEvent
+                    .builder()
+                    .prescriptionId(savedPrescription.getId())
+                    .patientId(savedPrescription.getPatientId())
+                    .patientEmail(patient.getEmail())
+                    .doctorName(doctor.getName())
+                    .instructions(savedPrescription.getInstructions())
+                    .build();
+
+            messagePublisher.publishPrescriptionEvent(prescriptionEvent, "prescription.created");
+
+        }catch (Exception e){
+            System.out.println("Notification failed: " + e.getMessage());
+        }
+
+        return mapToRespond(savedPrescription);
     }
 
     @Override
