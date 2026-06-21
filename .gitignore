@@ -15,3 +15,12 @@ buildNumber.properties
 .project
 # JDT-specific (Eclipse Java Development Tools)
 .classpath
+# IntelliJ IDEA files
+.idea/
+*.iml
+
+# Maven
+target/
+
+# Sensitive configs
+config-server/src/main/resources/configurations/
