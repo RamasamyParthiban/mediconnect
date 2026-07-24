@@ -12,7 +12,8 @@
 	<artifactId>appointment-service</artifactId>
 
 	<name>appointment-service</name>
-	<description>Appointment Service for Mediconnect APP</description>
+	<description>Appointment Service for MediConnect APP</description>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

@@ -60,4 +60,24 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getPatientAppointments());
     }
 
+    @PutMapping("/confirm/{id}")
+    public ResponseEntity<?> confirmAppointment(@PathVariable Long id){
+        try {
+            AppointmentResponse appointmentResponse = appointmentService.confirmAppointment(id);
+
+            return ResponseEntity.ok(appointmentResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    @PutMapping("/complete/{id}")
+    public ResponseEntity<?> completeAppointment(@PathVariable Long id){
+        try{
+            AppointmentResponse appointmentResponse = appointmentService.completeAppointment(id);
+            return ResponseEntity.ok(appointmentResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
 }

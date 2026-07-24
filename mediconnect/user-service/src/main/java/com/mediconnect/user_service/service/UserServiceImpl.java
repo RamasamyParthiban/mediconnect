@@ -24,6 +24,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse registerUser(RegisterRequest userRequest) {
 
+        if(userRepository.findByPhone(userRequest.getPhone()).isPresent()){
+            throw  new RuntimeException("Phone number already Exists!");
+        }
+
+        if( userRepository.findByEmail(userRequest.getEmail()).isPresent()){
+            throw  new RuntimeException("Email already Exists!");
+        }
+
         User user = userRepository.save(User.builder()
                 .name(userRequest.getName())
                 .phone(userRequest.getPhone())
@@ -60,7 +68,12 @@ public class UserServiceImpl implements UserService {
         String userPassword = user.getPassword();
 
         if (encoder.matches(password, userPassword)) {
-            return LoginResponse.builder().name(user.getName()).role(user.getRole()).token(jwtUtils.generateToken(email, user.getRole(), user.getId())).build();
+            return LoginResponse.builder()
+                    .name(user.getName())
+                    .role(user.getRole())
+                    .token(jwtUtils.generateToken(email, user.getRole(), user.getId()))
+                    .userId(user.getId())
+                    .build();
         } else {
             throw new RuntimeException("Invalid credentials");
         }

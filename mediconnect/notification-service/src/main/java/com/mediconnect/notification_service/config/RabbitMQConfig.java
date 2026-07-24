@@ -22,6 +22,10 @@ public class RabbitMQConfig {
 
     public static final String APPOINTMENT_CANCELLED_QUEUE = "notification.appointment.cancelled.queue";
 
+    public static final String APPOINTMENT_CONFIRMED_QUEUE = "notification.appointment.confirmed.queue";
+
+    public static final String APPOINTMENT_COMPLETED_QUEUE = "notification.appointment.completed.queue";
+
     public static final String PAYMENT_QUEUE = "notification.payment.queue";
 
     public static final String PRESCRIPTION_QUEUE = "notification.prescription.queue";
@@ -31,6 +35,10 @@ public class RabbitMQConfig {
     public static final String APPOINTMENT_BOOKED_ROUTING_KEY = "appointment.booked";
 
     public static final String APPOINTMENT_CANCELLED_ROUTING_KEY = "appointment.cancelled";
+
+    public static final String APPOINTMENT_CONFIRMED_ROUTING_KEY = "appointment.confirmed";
+
+    public static final String APPOINTMENT_COMPLETED_ROUTING_KEY = "appointment.completed";
 
     public static final String PAYMENT_ROUTING_KEY = "payment.success";
 
@@ -56,6 +64,16 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue appointmentConfirmedQueue(){
+        return new Queue(APPOINTMENT_CONFIRMED_QUEUE);
+    }
+
+    @Bean
+    public Queue appointmentCompletedQueue(){
+        return new Queue(APPOINTMENT_COMPLETED_QUEUE);
+    }
+
+    @Bean
     public Queue paymentQueue() {
         return new Queue(PAYMENT_QUEUE);
     }
@@ -73,6 +91,24 @@ public class RabbitMQConfig {
                 .bind(appointmentBookedQueue())
                 .to(exchange())
                 .with(APPOINTMENT_BOOKED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding appointmentConfirmedBinding(){
+
+        return BindingBuilder
+                .bind(appointmentConfirmedQueue())
+                .to(exchange())
+                .with(APPOINTMENT_CONFIRMED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding appointmentCompletedBinding(){
+
+        return BindingBuilder
+                .bind(appointmentConfirmedQueue())
+                .to(exchange())
+                .with(APPOINTMENT_COMPLETED_ROUTING_KEY);
     }
 
     @Bean

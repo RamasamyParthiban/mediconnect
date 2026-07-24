@@ -18,8 +18,8 @@ public interface DoctorClient {
     @PutMapping("/api/doctors/slots/{slotId}/status")
     SlotResponse updateSlotStatus(@PathVariable Long slotId, @RequestParam boolean isBooked);
 
-    @GetMapping("/api/doctors/userID/{userID}")
-    DoctorResponse getDoctorByUserId(@PathVariable Long userID);
+    @GetMapping("/api/doctors/userId/{userId}")
+    DoctorResponse getDoctorByUserId(@PathVariable Long userId);
 
     @GetMapping("/api/doctors/id/{id}")
     DoctorResponse getDoctorById(@PathVariable Long id);

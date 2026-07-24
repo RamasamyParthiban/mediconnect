@@ -12,4 +12,7 @@ public interface UserClient {
     @GetMapping("/api/users/{email}")
     UserResponse getUserByEmail(@PathVariable String email);
 
+    @GetMapping("/api/users/id/{id}")
+    UserResponse getUserById(@PathVariable Long id);
+
 }

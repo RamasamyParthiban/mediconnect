@@ -37,7 +37,7 @@ public class NotificationConsumer {
 
         notificationRepository.save(Notification
                 .builder()
-                .type("APPOINTMENT BOOKED")
+                .type("APPOINTMENT_BOOKED")
                 .recipientEmail(event.getPatientEmail())
                 .subject(subject)
                 .message(message)
@@ -61,7 +61,61 @@ public class NotificationConsumer {
 
         notificationRepository.save(Notification
                 .builder()
-                .type("APPOINTMENT CANCELLED")
+                .type("APPOINTMENT_CANCELLED")
+                .recipientEmail(event.getPatientEmail())
+                .subject(subject)
+                .message(message)
+                .sent(true)
+                .sentAt(LocalDateTime.now())
+                .build());
+
+
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.APPOINTMENT_CONFIRMED_QUEUE)
+    public void handleAppointmentConfirmedQueue(AppointmentEvent event) {
+
+        String subject = "Appointment Confirmed - MediConnect";
+
+        String message = "Dear Patient, \n\n" +
+                "Your Appointment with Dr. " + event.getDoctorName() +
+                " has been CONFIRMED.\n\n" +
+                "Appointment time: "+event.getAppointmentTime()+"\n\n" +
+                "Please be on time!\n\n"+
+                "Thank you, \nMediConnect Team";
+
+        emailService.sendEmail(event.getPatientEmail(), subject, message);
+
+        notificationRepository.save(Notification
+                .builder()
+                .type("APPOINTMENT_CONFIRMED")
+                .recipientEmail(event.getPatientEmail())
+                .subject(subject)
+                .message(message)
+                .sent(true)
+                .sentAt(LocalDateTime.now())
+                .build());
+
+
+    }
+
+    @RabbitListener(queues = RabbitMQConfig.APPOINTMENT_COMPLETED_QUEUE)
+    public void handleAppointmentCompletedQueue(AppointmentEvent event) {
+
+        String subject = "Appointment Completed - MediConnect";
+
+        String message = "Dear Patient, \n\n" +
+                "Your Appointment with Dr. " + event.getDoctorName() +
+                " has been marked as COMPLETED!\n\n" +
+                "Your doctor may write a prescription shortly.\n" +
+                "Check Mediconnect for updates."+
+                "Thank you, \nMediConnect Team";
+
+        emailService.sendEmail(event.getPatientEmail(), subject, message);
+
+        notificationRepository.save(Notification
+                .builder()
+                .type("APPOINTMENT_COMPLETED")
                 .recipientEmail(event.getPatientEmail())
                 .subject(subject)
                 .message(message)

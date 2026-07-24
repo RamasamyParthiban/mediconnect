@@ -37,11 +37,11 @@ public class DoctorController {
         }
     }
 
-    @GetMapping("/userId/{userID}")
-    public ResponseEntity<?> getDoctorByUserId(@PathVariable Long userID) {
+    @GetMapping("/userId/{userId}")
+    public ResponseEntity<?> getDoctorByUserId(@PathVariable Long userId) {
 
         try {
-            DoctorResponse doctor = doctorService.getDoctorByUserId(userID);
+            DoctorResponse doctor = doctorService.getDoctorByUserId(userId);
             return ResponseEntity.ok(doctor);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());

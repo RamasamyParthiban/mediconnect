@@ -13,6 +13,6 @@ import java.time.LocalDateTime;
 @Builder
 public class SlotRequest {
 
-    private LocalDateTime datetime;
+    private LocalDateTime dateTime;
 
 }

@@ -18,11 +18,14 @@ public class UserController {
     UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> saveUser(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> saveUser(@RequestBody RegisterRequest registerRequest) {
 
-        UserResponse userResponse = userService.registerUser(registerRequest);
-
-        return ResponseEntity.ok(userResponse);
+        try {
+            UserResponse userResponse = userService.registerUser(registerRequest);
+            return ResponseEntity.ok(userResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @PostMapping("/login")
@@ -48,7 +51,7 @@ public class UserController {
     }
 
     @GetMapping("/id/{id}")
-    public ResponseEntity<?> findUserById(@PathVariable Long id){
+    public ResponseEntity<?> findUserById(@PathVariable Long id) {
         try {
             UserResponse userResponse = userService.findUserById(id);
             return ResponseEntity.ok(userResponse);

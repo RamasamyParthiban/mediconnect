@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,7 +56,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         //Publish Event to RabbitMQ
 
-        try{
+        try {
 
             UserResponse patient = userClient.getUserByEmail(getCurrentEmail());
 
@@ -98,9 +99,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         //Publish Event to RabbitMQ
 
-        try{
-
-            UserResponse patient = userClient.getUserByEmail(getCurrentEmail());
+        try {
+            //Always use patient id, not getCurrentEmail()
+            UserResponse patient = userClient.getUserById(appointment.getPatientId());
 
             DoctorResponse doctor = doctorClient.getDoctorById(appointment.getDoctorId());
 
@@ -139,10 +140,93 @@ public class AppointmentServiceImpl implements AppointmentService {
     public List<AppointmentResponse> getDoctorAppointments() {
 
         Long currentUserId = getCurrentUserId();
+        try{
+            DoctorResponse doctorByUserId = doctorClient.getDoctorByUserId(currentUserId);
 
-        DoctorResponse doctorByUserId = doctorClient.getDoctorByUserId(currentUserId);
+            return appointmentRepository.findByDoctorId(doctorByUserId.getId()).stream().map(this::mapToRespond).collect(Collectors.toList());
+        }catch (Exception e){
+            //Doctor has no profile yet -> return empty list|
+            return new ArrayList<>();
+        }
+    }
 
-        return appointmentRepository.findByDoctorId(doctorByUserId.getId()).stream().map(this::mapToRespond).collect(Collectors.toList());
+    @Override
+    @Transactional
+    public AppointmentResponse confirmAppointment(Long appointmentId) {
+
+        Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow(() -> new RuntimeException("Appointment Not Found"));
+
+        if (appointment.getAppointmentStatus() == AppointmentStatus.CANCELLED) {
+            throw new RuntimeException("Cannot confirm cancelled appointments!");
+        }
+        
+        appointment.setAppointmentStatus(AppointmentStatus.CONFIRMED);
+        Appointment confirmedAppointment = appointmentRepository.save(appointment);
+
+        //Publish Event to RabbitMQ
+        try{
+            UserResponse patient = userClient.getUserById(appointment.getPatientId());
+
+            DoctorResponse doctor = doctorClient.getDoctorById(appointment.getDoctorId());
+
+            SlotResponse slot = doctorClient.getSlotById(appointment.getSlotId());
+
+            AppointmentEvent event = AppointmentEvent.builder()
+                    .appointmentId(confirmedAppointment.getId())
+                    .patientId(confirmedAppointment.getPatientId())
+                    .doctorId(confirmedAppointment.getDoctorId())
+                    .patientEmail(patient.getEmail())
+                    .doctorName(doctor.getName())
+                    .appointmentTime(slot.getDateTime())
+                    .status("CONFIRMED")
+                    .build();
+
+            messagePublisher.publishAppointmentEvent(event, "appointment.confirmed");
+
+
+        }catch (Exception e){
+            System.out.println("Notification failed: "+e.getMessage());
+        }
+        return mapToRespond(confirmedAppointment);
+    }
+
+    @Override
+    @Transactional
+    public AppointmentResponse completeAppointment(Long appointmentId) {
+
+        Appointment appointment = appointmentRepository.findById(appointmentId).orElseThrow(() -> new RuntimeException("Appointment Not Found"));
+
+        if (appointment.getAppointmentStatus() != AppointmentStatus.CONFIRMED) {
+            throw new RuntimeException("Only confirmed appointments can be completed");
+        }
+
+        appointment.setAppointmentStatus(AppointmentStatus.COMPLETED);;
+
+        Appointment completedAppointment = appointmentRepository.save(appointment);
+
+        //Publish Event to RabbitMQ
+        try{
+            UserResponse patient = userClient.getUserById(appointment.getPatientId());
+
+            DoctorResponse doctor = doctorClient.getDoctorById(appointment.getId());
+
+            AppointmentEvent event = AppointmentEvent.builder()
+                    .appointmentId(completedAppointment.getId())
+                    .patientId(completedAppointment.getPatientId())
+                    .doctorId(completedAppointment.getDoctorId())
+                    .patientEmail(patient.getEmail())
+                    .doctorName(doctor.getName())
+                    .appointmentTime(null)
+                    .status("COMPLETED")
+                    .build();
+
+            messagePublisher.publishAppointmentEvent(event, "appointment.completed");
+
+        } catch (Exception e) {
+            System.out.println("Notification failed: "+e.getMessage());
+        }
+
+        return mapToRespond(completedAppointment);
     }
 
     private Long getCurrentUserId() {

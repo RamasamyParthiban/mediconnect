@@ -87,7 +87,7 @@ public class DoctorServiceImpl implements DoctorService {
 
         Doctor doctor = doctorRepository.findByUserId(getCurrentUserID()).orElseThrow();
 
-        AvailabilitySlot availabilitySlot = slotRepository.save(AvailabilitySlot.builder().datetime(slotRequest.getDatetime()).isBooked(false).doctor(doctor).build());
+        AvailabilitySlot availabilitySlot = slotRepository.save(AvailabilitySlot.builder().datetime(slotRequest.getDateTime()).isBooked(false).doctor(doctor).build());
 
         return SlotResponse.builder().id(availabilitySlot.getId()).booked(availabilitySlot.isBooked()).dateTime(availabilitySlot.getDatetime()).build();
     }
