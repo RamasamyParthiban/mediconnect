@@ -48,6 +48,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .doctorId(appointmentRequest.getDoctorId())
                 .slotId(appointmentRequest.getSlotId())
                 .bookedAt(LocalDateTime.now())
+                .appointmentDateTime(slot.getDateTime())
                 .notes(appointmentRequest.getNotes())
                 .appointmentStatus(AppointmentStatus.PENDING)
                 .build());
@@ -140,11 +141,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     public List<AppointmentResponse> getDoctorAppointments() {
 
         Long currentUserId = getCurrentUserId();
-        try{
+        try {
             DoctorResponse doctorByUserId = doctorClient.getDoctorByUserId(currentUserId);
 
             return appointmentRepository.findByDoctorId(doctorByUserId.getId()).stream().map(this::mapToRespond).collect(Collectors.toList());
-        }catch (Exception e){
+        } catch (Exception e) {
             //Doctor has no profile yet -> return empty list|
             return new ArrayList<>();
         }
@@ -159,12 +160,12 @@ public class AppointmentServiceImpl implements AppointmentService {
         if (appointment.getAppointmentStatus() == AppointmentStatus.CANCELLED) {
             throw new RuntimeException("Cannot confirm cancelled appointments!");
         }
-        
+
         appointment.setAppointmentStatus(AppointmentStatus.CONFIRMED);
         Appointment confirmedAppointment = appointmentRepository.save(appointment);
 
         //Publish Event to RabbitMQ
-        try{
+        try {
             UserResponse patient = userClient.getUserById(appointment.getPatientId());
 
             DoctorResponse doctor = doctorClient.getDoctorById(appointment.getDoctorId());
@@ -184,8 +185,8 @@ public class AppointmentServiceImpl implements AppointmentService {
             messagePublisher.publishAppointmentEvent(event, "appointment.confirmed");
 
 
-        }catch (Exception e){
-            System.out.println("Notification failed: "+e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Notification failed: " + e.getMessage());
         }
         return mapToRespond(confirmedAppointment);
     }
@@ -200,12 +201,13 @@ public class AppointmentServiceImpl implements AppointmentService {
             throw new RuntimeException("Only confirmed appointments can be completed");
         }
 
-        appointment.setAppointmentStatus(AppointmentStatus.COMPLETED);;
+        appointment.setAppointmentStatus(AppointmentStatus.COMPLETED);
+        ;
 
         Appointment completedAppointment = appointmentRepository.save(appointment);
 
         //Publish Event to RabbitMQ
-        try{
+        try {
             UserResponse patient = userClient.getUserById(appointment.getPatientId());
 
             DoctorResponse doctor = doctorClient.getDoctorById(appointment.getId());
@@ -223,7 +225,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             messagePublisher.publishAppointmentEvent(event, "appointment.completed");
 
         } catch (Exception e) {
-            System.out.println("Notification failed: "+e.getMessage());
+            System.out.println("Notification failed: " + e.getMessage());
         }
 
         return mapToRespond(completedAppointment);
@@ -244,7 +246,8 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .patientId(appointment.getPatientId())
                 .doctorId(appointment.getDoctorId())
                 .slotId(appointment.getSlotId())
-                .booksAt(appointment.getBookedAt())
+                .bookedAt(appointment.getBookedAt())
+                .appointmentDateTime(appointment.getAppointmentDateTime())
                 .notes(appointment.getNotes())
                 .appointmentStatus(appointment.getAppointmentStatus())
                 .build();

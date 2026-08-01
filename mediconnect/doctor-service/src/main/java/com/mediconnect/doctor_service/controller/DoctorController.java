@@ -59,11 +59,13 @@ public class DoctorController {
     }
 
     @PostMapping("/slot")
-    public ResponseEntity<SlotResponse> addAvailabilitySlot(@RequestBody SlotRequest slotRequest) {
-
-        SlotResponse slotResponse = doctorService.addAvailabilitySlot(slotRequest);
-
-        return ResponseEntity.ok(slotResponse);
+    public ResponseEntity<?> addAvailabilitySlot(@RequestBody SlotRequest slotRequest) {
+        try {
+            SlotResponse slotResponse = doctorService.addAvailabilitySlot(slotRequest);
+            return ResponseEntity.ok(slotResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
     @GetMapping("/slot/{slotId}")
@@ -107,6 +109,16 @@ public class DoctorController {
             return ResponseEntity.ok(slotResponse);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/slot/{slotId}")
+    public ResponseEntity<?> deleteSlot(@PathVariable Long slotId) {
+        try {
+            doctorService.deleteSlot(slotId);
+            return ResponseEntity.ok("Slot deleted successfully!");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 

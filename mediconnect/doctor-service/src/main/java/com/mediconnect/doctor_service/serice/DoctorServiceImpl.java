@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,11 +86,22 @@ public class DoctorServiceImpl implements DoctorService {
     @Override
     public SlotResponse addAvailabilitySlot(SlotRequest slotRequest) {
 
-        Doctor doctor = doctorRepository.findByUserId(getCurrentUserID()).orElseThrow();
+        if(slotRequest.getDateTime().isBefore(LocalDateTime.now())){
+            throw new RuntimeException("Cannot add a slot in tha past");
+        }
 
-        AvailabilitySlot availabilitySlot = slotRepository.save(AvailabilitySlot.builder().datetime(slotRequest.getDateTime()).isBooked(false).doctor(doctor).build());
+        Doctor doctor = doctorRepository.findByUserId(getCurrentUserID()).orElseThrow(() -> new RuntimeException("Doctor Not Found"));
 
-        return SlotResponse.builder().id(availabilitySlot.getId()).booked(availabilitySlot.isBooked()).dateTime(availabilitySlot.getDatetime()).build();
+        //reject duplicate slot for the same doctor at the same time
+        if(slotRepository.existsByDoctorIdAndDateTime(doctor.getId(), slotRequest.getDateTime())){
+            throw new RuntimeException("A slot already exists at this time.");
+        }
+
+        AvailabilitySlot availabilitySlot = slotRepository.save(AvailabilitySlot.builder().dateTime(slotRequest.getDateTime()).isBooked(false).doctor(doctor).build());
+
+        AvailabilitySlot saved = slotRepository.save(availabilitySlot);
+
+        return mapSlotToRespond(saved);
     }
 
     @Override
@@ -135,6 +147,17 @@ public class DoctorServiceImpl implements DoctorService {
         return mapSlotToRespond(slotResponse);
     }
 
+    @Override
+    public void deleteSlot(Long slotId) {
+        AvailabilitySlot availabilitySlot = slotRepository.findById(slotId).orElseThrow(() -> new RuntimeException("Slot Not Found"));
+
+        if (availabilitySlot.isBooked()) {
+            throw new RuntimeException("Cannot delete a booked slot");
+        }
+
+        slotRepository.delete(availabilitySlot);
+    }
+
     public String getCurrentEmail() {
 
         return SecurityContextHolder.getContext().getAuthentication().getName().split(":")[0];
@@ -169,6 +192,6 @@ public class DoctorServiceImpl implements DoctorService {
 
     private SlotResponse mapSlotToRespond(AvailabilitySlot availabilitySlot) {
 
-        return new SlotResponse(availabilitySlot.getId(), availabilitySlot.isBooked(), availabilitySlot.getDatetime());
+        return new SlotResponse(availabilitySlot.getId(), availabilitySlot.isBooked(), availabilitySlot.getDateTime());
     }
 }

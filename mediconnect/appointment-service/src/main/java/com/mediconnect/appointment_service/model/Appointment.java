@@ -33,6 +33,8 @@ public class Appointment {
     @Column(nullable = false)
     private LocalDateTime bookedAt;
 
+    private LocalDateTime appointmentDateTime;
+
     private String notes;
 
     @Enumerated(EnumType.STRING)

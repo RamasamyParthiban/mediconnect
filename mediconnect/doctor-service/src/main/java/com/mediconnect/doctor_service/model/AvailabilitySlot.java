@@ -23,7 +23,7 @@ public class AvailabilitySlot {
     @Column(updatable = true)
     private boolean isBooked;
 
-    private LocalDateTime datetime;
+    private LocalDateTime dateTime;
 
     @ManyToOne
     @JoinColumn(name = "doctor_id")

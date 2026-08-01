@@ -16,7 +16,7 @@ public class SlotResponse {
 
     private Long id;
 
-    private boolean booked;
+    private boolean isBooked;
 
     private LocalDateTime dateTime;
 }

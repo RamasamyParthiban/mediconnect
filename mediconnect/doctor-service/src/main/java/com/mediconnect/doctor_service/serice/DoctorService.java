@@ -31,6 +31,8 @@ public interface DoctorService {
     SlotResponse updateSlotStatus(Long slotId, boolean isBooked);
 
     SlotResponse getSlotById(Long slotID);
+
+    void deleteSlot(Long slotId);
 }
 
 

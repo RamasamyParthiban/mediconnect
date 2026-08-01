@@ -22,7 +22,9 @@ public class AppointmentResponse {
 
     private Long slotId;
 
-    private LocalDateTime booksAt;
+    private LocalDateTime bookedAt;
+
+    private LocalDateTime appointmentDateTime;
 
     private String notes;
 
