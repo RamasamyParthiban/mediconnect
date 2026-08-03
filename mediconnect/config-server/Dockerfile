@@ -2,4 +2,4 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY target/config-server-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8888
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx128m", "-Xms64m", "-jar", "app.jar"]

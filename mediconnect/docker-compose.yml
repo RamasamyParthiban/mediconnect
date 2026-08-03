@@ -6,7 +6,7 @@ services:
     image: mysql:8.0
     container_name: mediconnect-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: Parthiban1605
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_DATABASE: mediconnect_users
     ports:
       - "3306:3306"
@@ -120,6 +120,7 @@ services:
       - CONFIG_SERVER_URL=http://config-server:8888
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_users
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
       - mediconnect-network
     restart: on-failure
@@ -141,6 +142,7 @@ services:
       - CONFIG_SERVER_URL=http://config-server:8888
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_doctors
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     networks:
       - mediconnect-network
     restart: on-failure
@@ -164,6 +166,7 @@ services:
       - CONFIG_SERVER_URL=http://config-server:8888
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_appointments
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - mediconnect-network
@@ -188,6 +191,7 @@ services:
       - CONFIG_SERVER_URL=http://config-server:8888
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_prescriptions
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - mediconnect-network
@@ -212,6 +216,7 @@ services:
       - CONFIG_SERVER_URL=http://config-server:8888
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_payments
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
       - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - mediconnect-network
@@ -237,6 +242,7 @@ services:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_DATA_MONGODB_HOST=mongodb
+      - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
     networks:
       - mediconnect-network
