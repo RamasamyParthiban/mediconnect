@@ -121,6 +121,7 @@ services:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_users
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - mediconnect-network
     restart: on-failure
@@ -143,6 +144,7 @@ services:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_doctors
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - mediconnect-network
     restart: on-failure
@@ -167,6 +169,7 @@ services:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_appointments
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
       - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - mediconnect-network
@@ -192,6 +195,7 @@ services:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_prescriptions
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
       - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - mediconnect-network
@@ -217,6 +221,7 @@ services:
       - SPRING_CONFIG_IMPORT=configserver:http://config-server:8888
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/mediconnect_payments
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
       - SPRING_RABBITMQ_HOST=rabbitmq
     networks:
       - mediconnect-network
@@ -244,6 +249,7 @@ services:
       - SPRING_DATA_MONGODB_HOST=mongodb
       - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
     networks:
       - mediconnect-network
     restart: on-failure
